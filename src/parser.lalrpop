@@ -1,0 +1,52 @@
+use std::str::FromStr;
+use crate::ast::Sexp;
+
+grammar;
+
+pub Sexps: Vec<Box<Sexp>> = {
+	Sexp+,
+}
+
+pub Sexp: Box<Sexp> = {
+	Atom,
+	"(" <Sexp+> ")" => Box::new(Sexp::List{atoms: <>, proper: true}),
+	"(" <x:Sexp+> "." <xs:Sexp> ")" => {
+		let mut atoms = x;
+		atoms.push(xs);
+		Box::new(Sexp::List{atoms, proper: false})
+	},
+	"(" ")" => Box::new(Sexp::Nil),
+}
+
+Atom: Box<Sexp> = {
+	Int => Box::new(Sexp::Int(<>)),
+	Float => Box::new(Sexp::Float(<>)),
+	Symbol => Box::new(Sexp::Symbol(<>)),
+	Bool => Box::new(Sexp::Bool(<>)),
+	Str => Box::new(Sexp::Str(<>)),
+}
+
+Int: i32 = {
+	r"[0-9]+" => i32::from_str(<>).unwrap(),
+}
+
+Float: f32 = {
+	r"[0-9]+\." => f32::from_str(<>).unwrap(),
+	r"\.[0-9]+" => f32::from_str(<>).unwrap(),
+	r"[0-9]+\.[0-9]+" => f32::from_str(<>).unwrap(),
+}
+
+Symbol: String = {
+	r"[a-zA-Z!$%&*/:<=>?~_\^][a-zA-Z!$%&*/:<=>?~_\^0-9.+\-]*" => <>.to_owned(),
+	r"[+\-]" => <>.to_owned(),
+	"..." => <>.to_owned(),
+}
+
+Bool: bool = {
+	"#t" => true,
+	"#f" => false,
+}
+
+Str: String = {
+	<s:r#""[^"]*""#> => String::from(&s[1..s.len()-1])
+}
