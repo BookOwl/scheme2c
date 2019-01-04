@@ -1,0 +1,7 @@
+[package]
+name = "scheme2c"
+version = "0.1.0"
+authors = ["BookOwl <stanleybookowl@gmail.com>"]
+edition = "2018"
+
+[dependencies]
